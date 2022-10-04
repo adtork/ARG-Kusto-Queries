@@ -1,5 +1,5 @@
 # ARG-Kusto-Queries
-In this document, I am going to cover some common Kusto queries that can be quickly used in ARG (Azure Resource Graph) to quickly get information about resouces in an Azure subscription. In the portal, simply search for "ARG" or Resouce Graph Explorer and you can quickly see the KQL queries that can be generated to view information about Azure resources. If you're not familar with Kusto, more info here via the public docs: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/
+In this document, I am going to cover some common Kusto queries that can be quickly used in ARG (Azure Resource Graph) to quickly get information about resouces in an Azure subscription. This is an alternative way to get resources besides PowerShell, CLI and RestAPI. In the portal, simply search for "ARG" or Resouce Graph Explorer and you can quickly see the KQL queries that can be generated to view information about Azure resources. If you're not familar with Kusto, more info here via the public docs: https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/
 
 In a nutshell, Kusto is very simmilar to SQL. Its just a structured query language used to pull resouces inside Azure. Here is the blade summary of resouces that can be queried:
 
