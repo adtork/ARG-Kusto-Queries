@@ -23,8 +23,18 @@ Resources
     ) on vmId
     | project-away vmId1
     | sort by vmName asc
-```
+    
+#Dumping all Vnets and their address blocks
+resources   
+ | where type == "microsoft.network/virtualnetworks"
+ | extend AddressSpace_AddressPrefixes = tostring(properties.['addressSpace'].['addressPrefixes'])
+ | project name, resourceGroup, subscriptionId, AddressSpace_AddressPrefixes
+ ```
 
-We can see this dumps all the given VMs including hostname, IP info etc along with URI. This data can be viewed in JSON and also exported to .CSV.
+We can see this dumps all the given VMs including hostname, IP info etc along with URI. This data can be viewed in JSON and also exported to .CSV. For VNETs, we can project away what we want and dump the address space along with other relevant info. 
 
 ![image](https://user-images.githubusercontent.com/55964102/193879712-61529fe1-a67a-432d-b986-0c9bdde86a01.png)
+
+![image](https://user-images.githubusercontent.com/55964102/196306528-76dca023-0ac4-4f4a-82cf-5f770af220cd.png)
+
+
