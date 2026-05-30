@@ -1,0 +1,12 @@
+// ============================================================
+// List VNets across all attached subscriptions
+// ============================================================
+// Returns: name, resourceGroup, subscriptionId, addressPrefixes
+// Resources queried: virtualnetworks
+// Usage: Paste into Azure Resource Graph Explorer in the portal
+//        or run via `az graph query -q "$(cat queries/list-vnets-with-address-space.kql)"`
+// ============================================================
+resources   
+ | where type == "microsoft.network/virtualnetworks"
+ | extend AddressSpace_AddressPrefixes = tostring(properties.['addressSpace'].['addressPrefixes'])
+ | project name, resourceGroup, subscriptionId, AddressSpace_AddressPrefixes
