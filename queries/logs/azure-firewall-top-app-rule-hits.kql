@@ -1,0 +1,16 @@
+// ============================================================
+// Azure Firewall — Top application rule hits (HTTP/HTTPS/MSSQL)
+// ============================================================
+// Table: AZFWApplicationRule (resource-specific logs)
+// Returns: top FQDNs being matched, broken down by Allow/Deny
+// Usage: Identify noisy egress destinations and rule effectiveness
+// Time range: last 24 hours
+// Docs: https://learn.microsoft.com/azure/firewall/firewall-structured-logs
+// ============================================================
+AZFWApplicationRule
+| where TimeGenerated > ago(1d)
+| extend FqdnClean = tolower(Fqdn)
+| summarize Hits = count(),
+            UniqueSources = dcount(SourceIp)
+            by FqdnClean, Action, Protocol, TargetUrl = Url
+| top 50 by Hits desc

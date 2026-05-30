@@ -1,0 +1,16 @@
+// ============================================================
+// Azure Firewall — Top denied destinations (network rules)
+// ============================================================
+// Table: AZFWNetworkRule (resource-specific logs)
+// Returns: top destination IP:port pairs being denied, with hit counts
+// Usage: Run in Log Analytics workspace where Azure Firewall sends logs.
+//        Enable "Resource specific" diagnostic settings on the firewall.
+// Time range: last 24 hours (adjust ago(1d) as needed)
+// Docs: https://learn.microsoft.com/azure/firewall/firewall-structured-logs
+// ============================================================
+AZFWNetworkRule
+| where TimeGenerated > ago(1d)
+| where Action == "Deny"
+| summarize Hits = count()
+            by SourceIp, DestinationIp, DestinationPort, Protocol, Policy = Action
+| top 50 by Hits desc

@@ -1,0 +1,16 @@
+// ============================================================
+// Application Gateway — Backend 5xx responses
+// ============================================================
+// Table: AGWAccessLogs (resource-specific)
+// Returns: 5xx responses grouped by backend pool member
+// Use case: pinpoint which backend host is throwing errors
+// Docs: https://learn.microsoft.com/azure/application-gateway/application-gateway-diagnostics
+// ============================================================
+AGWAccessLogs
+| where TimeGenerated > ago(1h)
+| where httpStatus_d >= 500
+| summarize Errors        = count(),
+            UniqueClients = dcount(clientIP_s),
+            SampleUri     = any(requestUri_s)
+            by backendPoolName_s, serverRouted_s, httpStatus_d
+| top 50 by Errors desc

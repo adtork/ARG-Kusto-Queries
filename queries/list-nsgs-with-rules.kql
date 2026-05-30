@@ -1,0 +1,28 @@
+// ============================================================
+// List NSGs with their custom security rules
+// ============================================================
+// Returns: nsgName, resourceGroup, ruleName, priority, direction,
+//          access, protocol, src/dst prefixes + ports
+// Resources queried: microsoft.network/networksecuritygroups
+// Note: filters out default platform rules — only custom rules are returned
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/networksecuritygroups'
+| mv-expand rule = properties.securityRules
+| extend ruleName    = tostring(rule.name),
+         priority    = toint(rule.properties.priority),
+         direction   = tostring(rule.properties.direction),
+         access      = tostring(rule.properties.access),
+         protocol    = tostring(rule.properties.protocol),
+         srcPrefix   = tostring(rule.properties.sourceAddressPrefix),
+         srcPrefixes = tostring(rule.properties.sourceAddressPrefixes),
+         srcPort     = tostring(rule.properties.sourcePortRange),
+         dstPrefix   = tostring(rule.properties.destinationAddressPrefix),
+         dstPrefixes = tostring(rule.properties.destinationAddressPrefixes),
+         dstPort     = tostring(rule.properties.destinationPortRange),
+         dstPorts    = tostring(rule.properties.destinationPortRanges)
+| project nsgName = name, resourceGroup, subscriptionId, location,
+          ruleName, priority, direction, access, protocol,
+          srcPrefix, srcPrefixes, srcPort,
+          dstPrefix, dstPrefixes, dstPort, dstPorts
+| sort by nsgName asc, priority asc

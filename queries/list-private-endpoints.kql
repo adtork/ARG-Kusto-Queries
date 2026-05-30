@@ -1,0 +1,27 @@
+// ============================================================
+// List Private Endpoints with target PaaS resource + private IP
+// ============================================================
+// Returns: peName, resourceGroup, subnetId, targetResourceId,
+//          groupId, privateIp, connectionState
+// Resources queried: microsoft.network/privateendpoints,
+//                    microsoft.network/networkinterfaces
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/privateendpoints'
+| extend peId    = tolower(tostring(id)),
+         subnet  = tostring(properties.subnet.id),
+         nicId   = tolower(tostring(properties.networkInterfaces[0].id))
+| mv-expand conn = properties.privateLinkServiceConnections
+| extend targetId       = tostring(conn.properties.privateLinkServiceId),
+         groupIds       = tostring(conn.properties.groupIds),
+         connectionStatus = tostring(conn.properties.privateLinkServiceConnectionState.status)
+| join kind=leftouter (
+    Resources
+    | where type =~ 'microsoft.network/networkinterfaces'
+    | mv-expand ipc = properties.ipConfigurations
+    | project nicId = tolower(tostring(id)),
+              privateIp = tostring(ipc.properties.privateIPAddress)
+) on nicId
+| project peName = name, resourceGroup, subscriptionId, location,
+          subnet, targetId, groupIds, privateIp, connectionStatus
+| sort by peName asc

@@ -1,0 +1,18 @@
+// ============================================================
+// ExpressRoute Traffic Collector — Top talker flows
+// ============================================================
+// Table: ExpressRouteFlowLogs (IPFIX flow records)
+// Returns: top 5-tuples by bytes, action, region, circuit
+// Requires: ExpressRoute Traffic Collector resource attached to a circuit,
+//           sending IPFIX flows to Log Analytics.
+// Docs: https://learn.microsoft.com/azure/expressroute/traffic-collector-overview
+// ============================================================
+ExpressRouteFlowLogs
+| where TimeGenerated > ago(1h)
+| extend TotalBytes   = BytesSent + BytesReceived,
+         TotalPackets = PacketsSent + PacketsReceived
+| summarize Bytes   = sum(TotalBytes),
+            Packets = sum(TotalPackets),
+            Flows   = count()
+            by SourceIp, DestIp, DestPort, Protocol, FlowDirection, Action, Region
+| top 50 by Bytes desc

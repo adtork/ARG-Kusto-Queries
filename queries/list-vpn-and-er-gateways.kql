@@ -1,0 +1,25 @@
+// ============================================================
+// List VPN + ExpressRoute virtual network gateways (classic vnet GW)
+// ============================================================
+// Returns: name, gatewayType (Vpn|ExpressRoute), vpnType, sku,
+//          activeActive, enableBgp, asn, bgpPeeringAddress, publicIpIds
+// Resources queried: microsoft.network/virtualnetworkgateways
+// Note: vWAN hub gateways are separate resources — see list-vwan-hubs-and-gateways.kql
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/virtualnetworkgateways'
+| extend gatewayType   = tostring(properties.gatewayType),
+         vpnType       = tostring(properties.vpnType),
+         skuName       = tostring(properties.sku.name),
+         skuTier       = tostring(properties.sku.tier),
+         activeActive  = tobool(properties.activeActive),
+         enableBgp     = tobool(properties.enableBgp),
+         asn           = tolong(properties.bgpSettings.asn),
+         bgpPeerAddr   = tostring(properties.bgpSettings.bgpPeeringAddress),
+         ipConfigs     = properties.ipConfigurations
+| mv-expand ipConfigs
+| extend publicIpId    = tostring(ipConfigs.properties.publicIPAddress.id)
+| summarize publicIpIds = make_set(publicIpId)
+            by name, resourceGroup, subscriptionId, location, gatewayType, vpnType,
+               skuName, skuTier, activeActive, enableBgp, asn, bgpPeerAddr
+| sort by gatewayType asc, name asc

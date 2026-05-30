@@ -1,0 +1,20 @@
+// ============================================================
+// List Public IPs with allocation, SKU, and what they are attached to
+// ============================================================
+// Returns: name, resourceGroup, ipAddress, allocation, sku,
+//          tier, attachedResourceId, fqdn, idleTimeoutMinutes
+// Resources queried: microsoft.network/publicipaddresses
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/publicipaddresses'
+| extend ipAddress    = tostring(properties.ipAddress),
+         allocation   = tostring(properties.publicIPAllocationMethod),
+         ipVersion    = tostring(properties.publicIPAddressVersion),
+         attachedTo   = tostring(properties.ipConfiguration.id),
+         fqdn         = tostring(properties.dnsSettings.fqdn),
+         idleTimeout  = toint(properties.idleTimeoutInMinutes),
+         skuName      = tostring(sku.name),
+         skuTier      = tostring(sku.tier)
+| project name, resourceGroup, subscriptionId, location, ipAddress, ipVersion,
+          allocation, skuName, skuTier, attachedTo, fqdn, idleTimeout
+| sort by ipAddress asc

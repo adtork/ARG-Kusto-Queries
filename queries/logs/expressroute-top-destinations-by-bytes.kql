@@ -1,0 +1,16 @@
+// ============================================================
+// ExpressRoute — Top destinations by bytes received (ingress to Azure)
+// ============================================================
+// Table: ExpressRouteFlowLogs
+// Returns: which Azure-side IPs are pulling the most bytes from on-prem
+// Use case: capacity planning, finding noisy workloads
+// Docs: https://learn.microsoft.com/azure/expressroute/traffic-collector-overview
+// ============================================================
+ExpressRouteFlowLogs
+| where TimeGenerated > ago(6h)
+| where FlowDirection =~ "Inbound"
+| summarize BytesIn    = sum(BytesReceived),
+            Flows      = count(),
+            TopSources = make_set(SourceIp, 10)
+            by DestIp, Region
+| top 25 by BytesIn desc

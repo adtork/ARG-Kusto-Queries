@@ -1,0 +1,16 @@
+// ============================================================
+// NSG Flow Logs (Traffic Analytics) — Top denied flows
+// ============================================================
+// Table: AzureNetworkAnalytics_CL (Traffic Analytics processed flow data)
+// Returns: top src/dst/port combos being denied, with flow count + bytes
+// Requires: NSG Flow Logs v2 + Traffic Analytics enabled
+// Docs: https://learn.microsoft.com/azure/network-watcher/traffic-analytics-schema
+// ============================================================
+AzureNetworkAnalytics_CL
+| where TimeGenerated > ago(1d)
+| where SubType_s == "FlowLog"
+| where FlowStatus_s == "D"  // D = Denied, A = Allowed
+| summarize FlowCount = sum(FlowCount_d),
+            Bytes     = sum(InboundBytes_d) + sum(OutboundBytes_d)
+            by SrcIP_s, DestIP_s, DestPort_d, L4Protocol_s, NSGRule_s
+| top 50 by FlowCount desc

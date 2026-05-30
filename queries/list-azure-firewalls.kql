@@ -1,0 +1,23 @@
+// ============================================================
+// List Azure Firewalls across all attached subscriptions
+// ============================================================
+// Returns: name, resourceGroup, subscriptionId, location, sku, tier,
+//          firewallPolicyId, threatIntelMode, privateIPAddress, publicIPs
+// Resources queried: microsoft.network/azurefirewalls
+// Usage: Paste into Azure Resource Graph Explorer in the portal
+//        or run via `az graph query -q "$(cat queries/list-azure-firewalls.kql)"`
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/azurefirewalls'
+| extend skuName       = tostring(properties.sku.name),
+         skuTier       = tostring(properties.sku.tier),
+         policyId      = tostring(properties.firewallPolicy.id),
+         threatIntel   = tostring(properties.threatIntelMode),
+         ipConfigs     = properties.ipConfigurations
+| mv-expand ipConfigs
+| extend privateIp     = tostring(ipConfigs.properties.privateIPAddress),
+         publicIpId    = tostring(ipConfigs.properties.publicIPAddress.id)
+| summarize privateIPs = make_set(privateIp),
+            publicIpIds = make_set(publicIpId)
+            by name, resourceGroup, subscriptionId, location, skuName, skuTier, policyId, threatIntel
+| sort by name asc

@@ -1,0 +1,22 @@
+// ============================================================
+// List Load Balancers with frontend IPs, backend pool size, and rules
+// ============================================================
+// Returns: name, resourceGroup, sku, tier, frontendIps,
+//          backendPoolCount, lbRuleCount, inboundNatRuleCount
+// Resources queried: microsoft.network/loadbalancers
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/loadbalancers'
+| extend skuName     = tostring(sku.name),
+         skuTier     = tostring(sku.tier),
+         feIps       = properties.frontendIPConfigurations,
+         poolCount   = array_length(properties.backendAddressPools),
+         ruleCount   = array_length(properties.loadBalancingRules),
+         natCount    = array_length(properties.inboundNatRules)
+| mv-apply fe = feIps on (
+    project feIp = strcat(tostring(fe.properties.privateIPAddress), tostring(fe.properties.publicIPAddress.id))
+    | summarize frontendIps = make_list(feIp)
+)
+| project name, resourceGroup, subscriptionId, location, skuName, skuTier,
+          frontendIps, poolCount, ruleCount, natCount
+| sort by name asc

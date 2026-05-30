@@ -1,0 +1,14 @@
+// ============================================================
+// Azure Firewall — IDPS signature hits (Premium tier)
+// ============================================================
+// Table: AZFWIdpsSignature (resource-specific logs)
+// Returns: triggered IDPS signatures with severity, source/dest, action
+// Requires: Firewall Premium with IDPS enabled
+// Docs: https://learn.microsoft.com/azure/firewall/premium-features#idps
+// ============================================================
+AZFWIdpsSignature
+| where TimeGenerated > ago(1d)
+| summarize Hits = count()
+            by SignatureId, Description, Severity, Action,
+               SourceIp, DestinationIp, DestinationPort, Protocol
+| top 100 by Hits desc

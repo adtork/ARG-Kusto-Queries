@@ -1,0 +1,18 @@
+// ============================================================
+// List user-defined route tables and their routes
+// ============================================================
+// Returns: routeTableName, resourceGroup, routeName, addressPrefix,
+//          nextHopType, nextHopIpAddress, disableBgpRoutePropagation
+// Resources queried: microsoft.network/routetables
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/routetables'
+| extend disableBgpProp = tobool(properties.disableBgpRoutePropagation)
+| mv-expand route = properties.routes
+| extend routeName      = tostring(route.name),
+         addressPrefix  = tostring(route.properties.addressPrefix),
+         nextHopType    = tostring(route.properties.nextHopType),
+         nextHopIp      = tostring(route.properties.nextHopIpAddress)
+| project routeTableName = name, resourceGroup, subscriptionId, location,
+          routeName, addressPrefix, nextHopType, nextHopIp, disableBgpProp
+| sort by routeTableName asc, addressPrefix asc

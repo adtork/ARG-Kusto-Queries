@@ -1,0 +1,24 @@
+// ============================================================
+// List Virtual WAN hubs with associated VPN / ExpressRoute gateways
+// ============================================================
+// Returns: hubName, virtualWanId, addressPrefix, sku, routingState,
+//          vpnGatewayId, expressRouteGatewayId, p2sVpnGatewayId
+// Resources queried: microsoft.network/virtualhubs,
+//                    microsoft.network/vpngateways,
+//                    microsoft.network/expressroutegateways,
+//                    microsoft.network/p2svpngateways
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/virtualhubs'
+| extend hubName       = name,
+         hubId         = tolower(tostring(id)),
+         vwanId        = tostring(properties.virtualWan.id),
+         addressPrefix = tostring(properties.addressPrefix),
+         hubSku        = tostring(properties.sku),
+         routingState  = tostring(properties.routingState),
+         vpnGwId       = tolower(tostring(properties.vpnGateway.id)),
+         erGwId        = tolower(tostring(properties.expressRouteGateway.id)),
+         p2sGwId       = tolower(tostring(properties.p2SVpnGateway.id))
+| project hubName, resourceGroup, subscriptionId, location, vwanId, addressPrefix,
+          hubSku, routingState, vpnGwId, erGwId, p2sGwId
+| sort by hubName asc

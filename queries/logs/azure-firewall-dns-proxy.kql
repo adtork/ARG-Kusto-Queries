@@ -1,0 +1,17 @@
+// ============================================================
+// Azure Firewall — DNS proxy query volume + NXDOMAIN trends
+// ============================================================
+// Table: AZFWDnsQuery (resource-specific logs)
+// Returns: top queried domains, error-rate by domain
+// Requires: DNS proxy enabled on the firewall policy
+// Docs: https://learn.microsoft.com/azure/firewall/dns-details
+// ============================================================
+AZFWDnsQuery
+| where TimeGenerated > ago(1d)
+| extend qname = tolower(QueryName)
+| summarize Queries  = count(),
+            Errors   = countif(ResponseCode != "NOERROR"),
+            ErrorRate = round(100.0 * countif(ResponseCode != "NOERROR") / count(), 2)
+            by qname, QueryType
+| where Queries > 10
+| top 50 by Queries desc

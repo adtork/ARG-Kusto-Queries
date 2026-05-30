@@ -1,0 +1,16 @@
+// ============================================================
+// Private Link Service — Bytes processed + flow counts
+// ============================================================
+// Table: AzureMetrics (PLS metrics)
+// Returns: PLS bytes-in/out and flow count per 5-minute bucket
+// Use case: validate PE→PLS reachability and throughput
+// Docs: https://learn.microsoft.com/azure/private-link/monitor-private-link
+// ============================================================
+AzureMetrics
+| where TimeGenerated > ago(1h)
+| where ResourceProvider == "MICROSOFT.NETWORK"
+| where ResourceId contains "/privateLinkServices/"
+| where MetricName in ("PLSBytesIn", "PLSBytesOut", "PLSNicTotalFlowCount")
+| summarize Value = sum(Total)
+            by bin(TimeGenerated, 5m), Resource, MetricName
+| sort by TimeGenerated desc

@@ -1,0 +1,16 @@
+// ============================================================
+// VPN Gateway — BGP route changes (add/withdraw)
+// ============================================================
+// Table: AzureDiagnostics (Category == RouteDiagnosticLog)
+// Returns: prefix add/withdraw events with peer IP
+// Enable: Diagnostic settings on the VPN GW → RouteDiagnosticLog
+// Docs: https://learn.microsoft.com/azure/vpn-gateway/troubleshoot-vpn-with-azure-diagnostics
+// ============================================================
+AzureDiagnostics
+| where TimeGenerated > ago(1d)
+| where Category == "RouteDiagnosticLog"
+| extend prefix    = tostring(prefix_s),
+         peerIP    = tostring(peer_s),
+         eventType = tostring(message_s)
+| project TimeGenerated, Resource, peerIP, prefix, eventType, OperationName
+| sort by TimeGenerated desc

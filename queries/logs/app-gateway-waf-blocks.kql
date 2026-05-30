@@ -1,0 +1,16 @@
+// ============================================================
+// Application Gateway WAF — Blocked / matched requests
+// ============================================================
+// Table: AGWFirewallLogs (resource-specific) — or AzureDiagnostics with
+//        Category == ApplicationGatewayFirewallLog (legacy "Azure diagnostics" mode)
+// Returns: blocked requests with rule id, action, host, sample URI
+// Docs: https://learn.microsoft.com/azure/web-application-firewall/ag/web-application-firewall-logs
+// ============================================================
+AGWFirewallLogs
+| where TimeGenerated > ago(1d)
+| where Action_s in ("Blocked", "Matched")
+| summarize Hits          = count(),
+            UniqueClients = dcount(ClientIp_s),
+            SampleUri     = any(RequestUri_s)
+            by RuleId_s, Action_s, Hostname_s, RuleSetType_s, RuleSetVersion_s
+| top 50 by Hits desc

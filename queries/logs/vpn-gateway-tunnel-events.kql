@@ -1,0 +1,16 @@
+// ============================================================
+// VPN Gateway — IPsec tunnel state changes + disconnects
+// ============================================================
+// Table: AzureDiagnostics (Category == TunnelDiagnosticLog)
+// Returns: tunnel connect/disconnect events with remote IP + status
+// Enable: Diagnostic settings on the VPN GW → TunnelDiagnosticLog
+// Docs: https://learn.microsoft.com/azure/vpn-gateway/troubleshoot-vpn-with-azure-diagnostics
+// ============================================================
+AzureDiagnostics
+| where TimeGenerated > ago(1d)
+| where Category == "TunnelDiagnosticLog"
+| extend remoteIP = tostring(remoteIP_s),
+         status   = tostring(status_s),
+         tunnel   = tostring(instance_s)
+| project TimeGenerated, Resource, tunnel, remoteIP, status, OperationName
+| sort by TimeGenerated desc

@@ -1,0 +1,24 @@
+// ============================================================
+// List Application Gateways with SKU + WAF posture
+// ============================================================
+// Returns: name, resourceGroup, sku, tier, capacity, autoscale,
+//          wafEnabled, wafMode, httpListeners, backendPoolCount
+// Resources queried: microsoft.network/applicationgateways
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/applicationgateways'
+| extend skuName       = tostring(properties.sku.name),
+         skuTier       = tostring(properties.sku.tier),
+         capacity      = toint(properties.sku.capacity),
+         autoMin       = toint(properties.autoscaleConfiguration.minCapacity),
+         autoMax       = toint(properties.autoscaleConfiguration.maxCapacity),
+         wafEnabled    = tobool(properties.webApplicationFirewallConfiguration.enabled),
+         wafMode       = tostring(properties.webApplicationFirewallConfiguration.firewallMode),
+         wafRuleSet    = strcat(tostring(properties.webApplicationFirewallConfiguration.ruleSetType), " ",
+                                tostring(properties.webApplicationFirewallConfiguration.ruleSetVersion)),
+         listenerCount = array_length(properties.httpListeners),
+         backendCount  = array_length(properties.backendAddressPools)
+| project name, resourceGroup, subscriptionId, location, skuName, skuTier,
+          capacity, autoMin, autoMax, wafEnabled, wafMode, wafRuleSet,
+          listenerCount, backendCount
+| sort by name asc

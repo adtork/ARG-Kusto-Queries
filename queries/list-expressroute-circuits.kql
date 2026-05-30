@@ -1,0 +1,22 @@
+// ============================================================
+// List ExpressRoute circuits across all attached subscriptions
+// ============================================================
+// Returns: name, resourceGroup, location, sku, peeringLocation,
+//          bandwidthMbps, serviceProvider, circuitState, provisioningState
+// Resources queried: microsoft.network/expressroutecircuits
+// ============================================================
+Resources
+| where type =~ 'microsoft.network/expressroutecircuits'
+| extend skuFamily        = tostring(sku.family),
+         skuTier          = tostring(sku.tier),
+         serviceProvider  = tostring(properties.serviceProviderProperties.serviceProviderName),
+         peeringLocation  = tostring(properties.serviceProviderProperties.peeringLocation),
+         bandwidthMbps    = toint(properties.serviceProviderProperties.bandwidthInMbps),
+         circuitState     = tostring(properties.circuitProvisioningState),
+         serviceState     = tostring(properties.serviceProviderProvisioningState),
+         provisioningState = tostring(properties.provisioningState),
+         allowClassicOps  = tobool(properties.allowClassicOperations)
+| project name, resourceGroup, subscriptionId, location, skuTier, skuFamily,
+          serviceProvider, peeringLocation, bandwidthMbps,
+          circuitState, serviceState, provisioningState, allowClassicOps
+| sort by name asc
