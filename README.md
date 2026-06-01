@@ -1,4 +1,4 @@
-# ARG-Kusto-Queries
+# ARG-KQL-Queries
 
 ![Azure](https://img.shields.io/badge/Azure-Resource%20Graph-0078D4)
 ![KQL](https://img.shields.io/badge/Language-KQL-blue)
